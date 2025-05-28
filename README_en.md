@@ -290,3 +290,93 @@ The IDE this project used is supported by Jetbrains
   <a href="https://jb.gg/OpenSourceSupport"><img src="https://resources.jetbrains.com/storage/products/company/brand/logos/jb_beam.png" alt="JetBrains Logo (Main) logo." width="80"></a>
 </div>
 
+conda create -n subtitles python=3.12 pip
+conda activate subtitles
+
+pip install paddlepaddle==3.0.0rc1 -i https://www.paddlepaddle.org.cn/packages/stable/cpu/
+pip install -r requirements.txt
+
+conda install ccache
+conda install onnxruntime
+
+python gui.py
+python ./backend/main.py
+
+ffmpeg -i en.mp4 -c:v copy -c:a copy en.mkv
+
+
+
+# videosubfinder GUI
+
+git clone https://git.code.sf.net/p/videosubfinder/src videosubfinder-src
+
+cd videosubfinder-src
+
+sudo apt install libavcodec-dev libavformat-dev libavutil-dev libswscale-dev libavfilter-dev
+sudo apt install libopencv-dev
+
+mkdir -p build && cd build
+cmake -DCMAKE_BUILD_TYPE=Release -DWITH_GTK=ON -DWITH_FFMPEG=1 -DUSE_CUDA=OFF ..
+cmake --build . --config Release -j 16
+
+mkdir -p linux_build
+cd linux_build
+
+cmake -DCMAKE_BUILD_TYPE=Release -DUSE_CUDA=OFF -DCMAKE_INSTALL_PREFIX:PATH=install ..
+cmake --build . --target install --config Release -j 16
+
+./install/VideoSubFinder/VideoSubFinderWXW
+
+# VideoSubFinderCli
+
+git clone https://github.com/eritpchy/videosubfinder-cli.git
+cd videosubfinder-cli/
+
+docker build - < ./Build/Docker/cpu/base.Dockerfile
+docker ps
+docker image ls
+
+bash Build/Docker/cpu/build.sh 
+cd Build/Docker/cpu/out/videosubfinder-cli-cpu-linux-x64
+
+bash ./VideoSubFinderCli.run  -h
+bash test.sh
+
+LD_LIBRARY_PATH=. ldd ./VideoSubFinderWXW | grep "not found" >log.txt
+
+
+
+## spleeter
+
+https://colab.research.google.com/drive/1q4cqCNRJnYGddB9w5ZDVMtEw6VySQ23G#scrollTo=CCDCN5QSpTSI
+
+conda create -n spleeter python=3.10 pip
+conda activate spleeter
+
+conda install -c conda-forge ffmpeg libsndfile
+
+pip cache purge
+pip install ccompiler
+pip install spleeter --pre
+
+ffmpeg -i video.mp4 input.mp3
+spleeter separate -p spleeter:2stems -o output input.mp3
+bash spleet.sh input.mp3 output.mp3
+
+
+# Captioning based on audio
+--------------------------
+
+conda create -n captions python=3.12 pip
+conda activate captions
+
+## Whisper
+
+## autosub3
+https://github.com/jiaox99/autosub
+
+pip install autosub3
+
+autosub --list-languages
+autosub -S en -D en /content/video.mp4
+autosub -S de -D de 
