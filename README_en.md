@@ -370,13 +370,36 @@ bash spleet.sh input.mp3 output.mp3
 conda create -n captions python=3.12 pip
 conda activate captions
 
-## Whisper
+## Whisper Better
+https://pypi.org/project/openai-whisper/
 
-## autosub3
+pip install -U openai-whisper
+
+whisper --fp16 False # use always
+
+basic
+whisper --fp16 False de.mp4 --language de
+translate to same lang, MOST ACCURATE
+whisper --fp16 False de.mp4 --language de --task translate
+translate to other lang
+whisper --fp16 False de.mp4 --language en --task translate
+
+underline current word
+whisper --fp16 False  'de.mp4' --language de --word_timestamps True --highlight_words True
+
+
+## autosub3 Not so good
 https://github.com/jiaox99/autosub
+https://colab.research.google.com/drive/1KOy3bDFhaYAyONLZb-SqmH34p6r9oPY3#scrollTo=ZzjRO8dJD9GG
 
 pip install autosub3
 
 autosub --list-languages
 autosub -S en -D en /content/video.mp4
 autosub -S de -D de 
+
+
+
+
+find . -type f -name "._*"
+find . -type f -name "._*" -delete
