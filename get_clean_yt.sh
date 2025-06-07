@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# bash -i /home/sameer/Shared/Sync/Private/Work/Projects/video-subtitle-extractor/get_clean_yt.sh 4b8U7lT7l-M 1
+
 # [ -f "$HOME/.bashrc" ] && source "$HOME/.bashrc"
 # [ -f "$HOME/.bash_export" ] && source "$HOME/.bash_export"
 
@@ -12,6 +14,11 @@ youtubedl="$youtubedl --cookies-from-browser firefox"
 
 echo 'Default yt-dlp:'
 which yt-dlp
+
+usrDir='/home/sameer'
+projDir="$usrDir/Shared/Sync/Private/Work/Projects/video-subtitle-extractor"
+
+find . -type f -name "._*" -delete
 
 echo "############### 1. Download from youtube ###############"
 conda activate youtube
@@ -52,7 +59,7 @@ if [ -f $clnFile ]; then
 else
     conda activate spleeter
     which spleeter
-    bash /home/sameer/Shared/Sync/Private/Work/Projects/video-subtitle-extractor/gen_captioned.sh "$vidFile"
+    bash $projDir/gen_captioned.sh "$vidFile"
     conda deactivate
 fi
 
