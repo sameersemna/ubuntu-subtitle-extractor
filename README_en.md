@@ -403,3 +403,6 @@ autosub -S de -D de
 
 find . -type f -name "._*"
 find . -type f -name "._*" -delete
+
+
+bash /home/sameer/Shared/Sync/Private/Work/Projects/video-subtitle-extractor/gen_captioned.sh 01.mp4 

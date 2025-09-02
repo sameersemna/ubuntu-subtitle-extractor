@@ -1,12 +1,14 @@
 #!/bin/bash
 
 # bash -i /home/sameer/Shared/Sync/Private/Work/Projects/video-subtitle-extractor/get_clean_yt.sh 4b8U7lT7l-M 1
+# bash -i /home/sameer/Shared/Sync/Private/Work/Projects/video-subtitle-extractor/get_clean_yt.sh kxC5NDNNd0I 1
 
 # [ -f "$HOME/.bashrc" ] && source "$HOME/.bashrc"
 # [ -f "$HOME/.bash_export" ] && source "$HOME/.bash_export"
 
 url=$1
 processCaptions=${2:-0}
+lang=${3:-de}
 
 # -o "%(title)s-%(id)s.%(ext)s"
 youtubedl="yt-dlp -S ext:mp4:m4a -o %(id)s"
@@ -70,6 +72,8 @@ if [ "$processCaptions" == "0" ]; then
 fi
 
 srtFile="$vidId.srt"
+lang_srt=${srtFile/.srt/.$lang.srt}
+en_srt=${srtFile/.srt/.en.srt}
 
 echo "############### 3. Generate captions with whisper ###############"
 if [ -f $srtFile ]; then
@@ -79,8 +83,27 @@ elif [ ! -f $audFile ]; then
 else
     conda activate captions
     which whisper
-    whisper "$audFile" --language "de" --task translate --fp16 False
+    whisper "$audFile" --language "$lang" --task translate --fp16 False
     conda deactivate
+fi
+
+echo "############### 4. Generate captioned video with FFMPEG ###############"
+if [ -f $en_srt ]; then
+    if [ ! -s $en_srt ]; then
+        echo "File exists, but is empty: $en_srt"
+        echo "((( Give me the translations )))"
+        echo "cat \"$lang_srt\" | xsel --clipboard --input"
+        exit
+    fi
+    echo "File exists already: $en_srt"
+    cmd="bash $projDir/join2srt.sh '$vidFile'"
+    echo $cmd
+else
+    echo "File does not exist: $en_srt"
+    touch "$en_srt"
+    bash $projDir/replace.sh "$srtFile" "$lang_srt"
+    echo "((( Give me the translations )))"
+    echo "cat \"$lang_srt\" | xsel --clipboard --input"
 fi
 
 echo "=== COMPLETED: [$vidId] $vidTitle from $channel ==="

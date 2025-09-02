@@ -28,7 +28,7 @@ if [ -f $audio_path ]; then
 elif [ -f $video_path_clean ]; then
     echo "File exists: $video_path_clean"
 else
-    bash clean_vid_sound.sh "$video_path"
+    bash $usrDir/Shared/viz/de/clean_vid_sound.sh "$video_path"
     sleep 2
 fi
 
