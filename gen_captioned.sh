@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Script takes a video file and generates a captioned video using whisper, in english and one given language
+
+# bash /home/sameer/Shared/Sync/Private/Work/Projects/video-subtitle-extractor/gen_captioned.sh 01.mp4 'de' 
 # conda activate spleeter
 
 [ -f "$HOME/.bash_export" ] && source "$HOME/.bash_export"

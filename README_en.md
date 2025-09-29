@@ -290,6 +290,15 @@ The IDE this project used is supported by Jetbrains
   <a href="https://jb.gg/OpenSourceSupport"><img src="https://resources.jetbrains.com/storage/products/company/brand/logos/jb_beam.png" alt="JetBrains Logo (Main) logo." width="80"></a>
 </div>
 
+# CONDA environments
+--------------------------
+subtitles: has video-subtitle-extractor to generate captions from OCR of burned hardsubs
+spleeter: has spleeter to separate vocals from audio
+captions: has openai whisper to generate captions from audio
+
+# Captioning based on burned hardsubs
+--------------------------
+
 conda create -n subtitles python=3.12 pip
 conda activate subtitles
 

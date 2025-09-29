@@ -1,7 +1,9 @@
 #!/bin/bash
 
+# Script takes a youtube id, generates related video file and generates a captioned video using whisper, in english and one given language
+
 # bash -i /home/sameer/Shared/Sync/Private/Work/Projects/video-subtitle-extractor/get_clean_yt.sh 4b8U7lT7l-M 1
-# bash -i /home/sameer/Shared/Sync/Private/Work/Projects/video-subtitle-extractor/get_clean_yt.sh kxC5NDNNd0I 1
+# bash -i /home/sameer/Shared/Sync/Private/Work/Projects/video-subtitle-extractor/get_clean_yt.sh kxC5NDNNd0I 1 'de'
 
 # [ -f "$HOME/.bashrc" ] && source "$HOME/.bashrc"
 # [ -f "$HOME/.bash_export" ] && source "$HOME/.bash_export"
