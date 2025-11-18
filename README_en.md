@@ -290,3 +290,142 @@ The IDE this project used is supported by Jetbrains
   <a href="https://jb.gg/OpenSourceSupport"><img src="https://resources.jetbrains.com/storage/products/company/brand/logos/jb_beam.png" alt="JetBrains Logo (Main) logo." width="80"></a>
 </div>
 
+# CONDA environments
+--------------------------
+subtitles: has video-subtitle-extractor to generate captions from OCR of burned hardsubs
+spleeter: has spleeter to separate vocals from audio
+captions: has openai whisper to generate captions from audio
+
+# Captioning based on burned hardsubs
+--------------------------
+
+conda create -n subtitles python=3.12 pip
+conda activate subtitles
+
+pip install paddlepaddle==3.0.0rc1 -i https://www.paddlepaddle.org.cn/packages/stable/cpu/
+pip install -r requirements.txt
+
+conda install ccache
+conda install onnxruntime
+
+python gui.py
+python ./backend/main.py
+
+ffmpeg -i en.mp4 -c:v copy -c:a copy en.mkv
+
+
+
+# videosubfinder GUI
+
+git clone https://git.code.sf.net/p/videosubfinder/src videosubfinder-src
+
+cd videosubfinder-src
+
+sudo apt install libavcodec-dev libavformat-dev libavutil-dev libswscale-dev libavfilter-dev
+sudo apt install libopencv-dev
+
+mkdir -p build && cd build
+cmake -DCMAKE_BUILD_TYPE=Release -DWITH_GTK=ON -DWITH_FFMPEG=1 -DUSE_CUDA=OFF ..
+cmake --build . --config Release -j 16
+
+mkdir -p linux_build
+cd linux_build
+
+cmake -DCMAKE_BUILD_TYPE=Release -DUSE_CUDA=OFF -DCMAKE_INSTALL_PREFIX:PATH=install ..
+cmake --build . --target install --config Release -j 16
+
+./install/VideoSubFinder/VideoSubFinderWXW
+
+# VideoSubFinderCli
+
+git clone https://github.com/eritpchy/videosubfinder-cli.git
+cd videosubfinder-cli/
+
+docker build - < ./Build/Docker/cpu/base.Dockerfile
+docker ps
+docker image ls
+
+bash Build/Docker/cpu/build.sh 
+cd Build/Docker/cpu/out/videosubfinder-cli-cpu-linux-x64
+
+bash ./VideoSubFinderCli.run  -h
+bash test.sh
+
+LD_LIBRARY_PATH=. ldd ./VideoSubFinderWXW | grep "not found" >log.txt
+
+
+
+## spleeter
+
+https://colab.research.google.com/drive/1q4cqCNRJnYGddB9w5ZDVMtEw6VySQ23G#scrollTo=CCDCN5QSpTSI
+
+conda create -n spleeter python=3.10 pip
+conda activate spleeter
+
+conda install -c conda-forge ffmpeg libsndfile
+
+pip cache purge
+pip install ccompiler
+pip install spleeter --pre
+
+ffmpeg -i video.mp4 input.mp3
+spleeter separate -p spleeter:2stems -o output input.mp3
+bash spleet.sh input.mp3 output.mp3
+
+
+# Captioning based on audio
+--------------------------
+
+conda create -n captions python=3.12 pip
+conda activate captions
+
+## Whisper Better
+https://pypi.org/project/openai-whisper/
+
+pip install -U openai-whisper
+
+whisper --fp16 False # use always
+
+basic
+whisper --fp16 False de.mp4 --language de
+translate to same lang, MOST ACCURATE
+whisper --fp16 False de.mp4 --language de --task translate
+translate to other lang
+whisper --fp16 False de.mp4 --language en --task translate
+
+underline current word
+whisper --fp16 False  'de.mp4' --language de --word_timestamps True --highlight_words True
+
+
+## autosub3 Not so good
+https://github.com/jiaox99/autosub
+https://colab.research.google.com/drive/1KOy3bDFhaYAyONLZb-SqmH34p6r9oPY3#scrollTo=ZzjRO8dJD9GG
+
+pip install autosub3
+
+autosub --list-languages
+autosub -S en -D en /content/video.mp4
+autosub -S de -D de 
+
+
+
+
+find . -type f -name "._*"
+find . -type f -name "._*" -delete
+
+
+bash /home/sameer/Shared/Sync/Private/Work/Projects/video-subtitle-extractor/gen_captioned.sh 01.mp4 
+bash /home/sameer/Shared/Sync/Private/Work/Projects/video-subtitle-extractor/join2srt.sh "Biografie_Mālik_ibn_Dīnār_-_Semir_al-Makedoni_[iO_WcAlARP4].mp4"
+
+
+*******************
+
+fileMp4='FvLUirQnxvs.cln.mp4'
+fileSrt='FvLUirQnxvs.en0.srt'
+
+limit=''
+# limit='-ss 60 -to 90'
+
+ffmpeg -i $fileMp4 -vf "eq=brightness=-0.1,subtitles=$fileSrt:force_style='Fontsize=14,PrimaryColour=&H00cccc,MarginV=45,BorderStyle=4,BackColour=&H80000000,Outline=0.5'" -c:a copy $limit output_with_subtitles.mp4
+
+*******************

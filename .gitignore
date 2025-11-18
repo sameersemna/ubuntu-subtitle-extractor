@@ -352,6 +352,8 @@ $RECYCLE.BIN/
 # End of https://www.toptal.com/developers/gitignore/api/intellij+all,python,pycharm+all,macos,windows
 /backend/models/V2/ch_det/inference.pdiparams
 /backend/models/V4/ch_det/inference.pdiparams
+/down/
+/fonts/
 /output/
 /backend/test.py
 /dylib/
@@ -360,3 +362,9 @@ $RECYCLE.BIN/
 /test2.py
 /subtitle.ini
 /backend/models/**/*.onnx
+
+/test/test*
+
+output*.htm*
+output*.pdf
+.env

@@ -20,6 +20,12 @@ from tqdm import tqdm
 import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
+# module_path = os.path.abspath(os.path.join('.'))
+module_path = os.path.abspath(os.path.dirname(__file__) + '/..')
+if module_path not in sys.path:
+    sys.path.append(module_path)
+# print(sys.path)
+
 import importlib
 import config
 from tools import reformat
@@ -31,7 +37,54 @@ import platform
 import multiprocessing
 import time
 import pysrt
+import json
 
+vsf_limit = '-s 0:00:00:000'
+# vsf_limit = '-s 0:00:00:000 -e 0:01:45:100'
+# vsf_limit = '-s 0:00:10:300 -e 0:00:23:100'
+
+def get_values_from_json(filepath, keys_to_get):
+    """
+    Checks if a JSON file exists and retrieves specified values into variables.
+
+    Args:
+        filepath (str): The path to the JSON file.
+        keys_to_get (dict): A dictionary where keys are the variable names
+                             you want to assign the values to, and values are
+                             the keys to look for in the JSON file.
+
+    Returns:
+        bool: True if the file exists and all specified keys were found, False otherwise.
+    """
+    if os.path.exists(filepath):
+        try:
+            with open(filepath, 'r') as f:
+                data = json.load(f)
+                success = True
+                assigned_variables = {}
+                for var_name, json_key in keys_to_get.items():
+                    if json_key in data:
+                        globals()[var_name] = data[json_key]  # Assign to global scope
+                        assigned_variables[var_name] = data[json_key]
+                    else:
+                        print(f"Warning: Key '{json_key}' not found in the JSON file.")
+                        success = False
+                print("Successfully loaded values:")
+                for var, value in assigned_variables.items():
+                    print(f"  {var} = {value}")
+
+                # Clean up the sample file (optional)
+                os.remove(filepath)
+                return success
+        except json.JSONDecodeError:
+            print(f"Error: Could not decode JSON from file: {filepath}")
+            return False
+        except Exception as e:
+            print(f"An unexpected error occurred: {e}")
+            return False
+    else:
+        print(f"Error: File not found at path: {filepath}")
+        return False
 
 class SubtitleDetect:
     """
@@ -449,12 +502,13 @@ class SubtitleExtractor:
             self.vsf_running = False
         else:
             # 定义执行命令
-            cmd = f"{path_vsf} -c -r -i \"{self.video_path}\" -o \"{self.temp_output_dir}\" -ces \"{self.vsf_subtitle}\" "
+            cmd = f"{path_vsf} -c -r -i \"{self.video_path}\" -o \"{self.temp_output_dir}\" -ces \"{self.vsf_subtitle}\" {vsf_limit} "
             if config.USE_GPU:
                 cmd += "--use_cuda "
             cmd += f"-te {top_end} -be {bottom_end} -le {left_end} -re {right_end} -nthr {cpu_count} -dsi"
             self.vsf_running = True
             import subprocess
+            print(f"*** Running command: ${cmd}")
             p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, bufsize=1,
                                  close_fds='posix' in sys.builtin_module_names, shell=True)
             Thread(target=vsf_output, daemon=True, args=(p.stderr,)).start()
@@ -966,11 +1020,11 @@ class SubtitleExtractor:
     def start_subtitle_ocr_async(self):
         def get_ocr_progress():
             """
-            获取ocr识别进度
+            Get ocr recognition progress
             """
-            # 获取视频总帧数
+            # Get the total number of frames in the video
             total_frame_count = self.frame_count
-            # 是否打印提示开始查找字幕的信息
+            # Whether to print a message prompting the start of the subtitle search
             notify = True
             while True:
                 current_frame_no = self.subtitle_ocr_progress_queue.get(block=True)
@@ -994,7 +1048,7 @@ class SubtitleExtractor:
                                                                        )
         self.subtitle_ocr_task_queue = task_queue
         self.subtitle_ocr_progress_queue = progress_queue
-        # 开启线程负责更新OCR进度
+        # Open thread responsible for updating OCR progress
         Thread(target=get_ocr_progress, daemon=True).start()
         return process
 
@@ -1010,16 +1064,33 @@ class SubtitleExtractor:
 
 if __name__ == '__main__':
     multiprocessing.set_start_method("spawn")
-    # 提示用户输入视频路径
-    video_path = input(f"{config.interface_config['Main']['InputVideo']}").strip()
-    # 提示用户输入字幕区域
-    try:
-        y_min, y_max, x_min, x_max = map(int, input(
-            f"{config.interface_config['Main']['ChooseSubArea']} (ymin ymax xmin xmax)：").split())
-        subtitle_area = (y_min, y_max, x_min, x_max)
-    except ValueError as e:
-        subtitle_area = None
-    # 新建字幕提取对象
+
+    filepath = os.path.dirname(__file__) + '/run.json'
+    keys_to_retrieve = {
+        "video_path": "video_path",
+        "subtitle_area": "subtitle_area"
+    }
+
+    if get_values_from_json(filepath, keys_to_retrieve):
+        print(f"video_path: {video_path}")
+
+        subtitle_area = subtitle_area.split(',')
+        subtitle_area = [int(item.strip()) for item in subtitle_area]
+        subtitle_area = tuple(subtitle_area)
+        print(f"subtitle_area: {subtitle_area}")
+    else:
+        print("\nFailed to load values from JSON file.")
+
+        # Prompts the user to enter the video path
+        video_path = input(f"{config.interface_config['Main']['InputVideo']}").strip()
+        # Prompts the user to enter a subtitle field
+        try:
+            y_min, y_max, x_min, x_max = map(int, input(
+                f"{config.interface_config['Main']['ChooseSubArea']} (ymin ymax xmin xmax)：").split())
+            subtitle_area = (y_min, y_max, x_min, x_max)
+        except ValueError as e:
+            subtitle_area = None
+    # New Subtitle Extraction Object
     se = SubtitleExtractor(video_path, subtitle_area)
-    # 开始提取字幕
+    # Start extracting subtitles
     se.run()
