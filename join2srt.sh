@@ -15,7 +15,7 @@ echo "cores_count:$cores_count | threads_count:$threads_count | $ffmpeg"
 
 video_path=$1
 lang_top=${2:-'en'}
-lang_bottom=${2:-'de'}
+lang_bottom=${3:-'de'}
 limit=''
 # limit='-to 60'
 
@@ -41,8 +41,10 @@ validate_srt() {
     python $projDir/srtfix.py -i "$file_srt"
 }
 
-validate_srt "$in_base.$lang_top.srt"
-validate_srt "$in_base.$lang_bottom.srt"
+if [[ $lang_bottom == 'de' ]]; then
+    validate_srt "$in_base.$lang_top.srt"
+    validate_srt "$in_base.$lang_bottom.srt"
+fi
 rm -f *.test.srt
 # exit
 

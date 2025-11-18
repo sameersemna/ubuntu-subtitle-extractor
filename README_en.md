@@ -415,3 +415,17 @@ find . -type f -name "._*" -delete
 
 
 bash /home/sameer/Shared/Sync/Private/Work/Projects/video-subtitle-extractor/gen_captioned.sh 01.mp4 
+bash /home/sameer/Shared/Sync/Private/Work/Projects/video-subtitle-extractor/join2srt.sh "Biografie_Mālik_ibn_Dīnār_-_Semir_al-Makedoni_[iO_WcAlARP4].mp4"
+
+
+*******************
+
+fileMp4='FvLUirQnxvs.cln.mp4'
+fileSrt='FvLUirQnxvs.en0.srt'
+
+limit=''
+# limit='-ss 60 -to 90'
+
+ffmpeg -i $fileMp4 -vf "eq=brightness=-0.1,subtitles=$fileSrt:force_style='Fontsize=14,PrimaryColour=&H00cccc,MarginV=45,BorderStyle=4,BackColour=&H80000000,Outline=0.5'" -c:a copy $limit output_with_subtitles.mp4
+
+*******************

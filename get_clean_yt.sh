@@ -4,6 +4,7 @@
 
 # bash -i /home/sameer/Shared/Sync/Private/Work/Projects/video-subtitle-extractor/get_clean_yt.sh 4b8U7lT7l-M 1
 # bash -i /home/sameer/Shared/Sync/Private/Work/Projects/video-subtitle-extractor/get_clean_yt.sh kxC5NDNNd0I 1 'de'
+# bash -i /home/sameer/Shared/Sync/Private/Work/Projects/video-subtitle-extractor/get_clean_yt.sh FvLUirQnxvs 1 'ur'
 
 # [ -f "$HOME/.bashrc" ] && source "$HOME/.bashrc"
 # [ -f "$HOME/.bash_export" ] && source "$HOME/.bash_export"
@@ -78,10 +79,17 @@ lang_srt=${srtFile/.srt/.$lang.srt}
 en_srt=${srtFile/.srt/.en.srt}
 
 echo "############### 3. Generate captions with whisper ###############"
+if [ ! -f $audFile ]; then
+    echo "File missing: $audFile"
+    if [ -f $clnFile ]; then
+        ffmpeg -i "$clnFile" -q:a 0 -map a "$audFile"
+    else
+        echo "File missing: $clnFile"
+        exit
+    fi
+fi
 if [ -f $srtFile ]; then
     echo "File exists already: $srtFile"
-elif [ ! -f $audFile ]; then
-    echo "File missing: $audFile"
 else
     conda activate captions
     which whisper

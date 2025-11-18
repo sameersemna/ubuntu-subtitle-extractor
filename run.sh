@@ -10,9 +10,10 @@ workDir="$projDir/output"
 backendDir="$projDir/backend"
 
 video_path=$1
-subtitle_res='1280x720'
-# subtitle_res='1920x1080'
+# subtitle_res='1280x720'
+subtitle_res='1920x1080'
 subtitle_area=${2:-'10, 630, 10, 1270'} # ymin ymax xmin xmax
+lang_code=${3:-'en'}
 fileJson="$backendDir/run.json"
 
 source $projDir/common.sh
@@ -30,6 +31,11 @@ subtitle_width=$(echo "$subtitle_res" | cut -d'x' -f1)
 subtitle_height=$(echo "$subtitle_res" | cut -d'x' -f2)
 echo "Subtitle Width: $subtitle_width"
 echo "Subtitle Height: $subtitle_height"
+
+# Prepare settings.ini for subtitle extraction
+# Replace "Language =" in settings.ini with the extracted language code
+sed -i "s/^Language = .*/Language = $lang_code/" $projDir/settings.ini
+echo "Updated settings.ini with Language = $lang_code"
 
 # Call the function and capture its line-by-line output into an array
 # `mapfile -t my_array` reads lines into the `my_array` array, removing trailing newlines.
@@ -55,8 +61,8 @@ echo "{\"video_path\": \"$video_path\", \"subtitle_area\": \"$subtitle_area_calc
 echo "{\"video_path\": \"$video_path\", \"subtitle_area\": \"$subtitle_area_calculated\"}" > $fileJson
 # exit
 
-conda activate subtitles
+# conda activate subtitles
 
 python $backendDir/main.py
 
-conda deactivate
+# conda deactivate
